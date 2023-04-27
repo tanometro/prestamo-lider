@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/@mdi/font@6.x/css/materialdesignicons.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="//code.jquery.com/ui/1.13.1/themes/base/jquery-ui.css">
+  <link rel="stylesheet" href="/resources/demos/style.css">
+  <script src="https://code.jquery.com/jquery-3.6.0.js"></script>
+  <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
+    <style>
+    .ui-dialog .ui-dialog-content {
+      border-radius: 20px;
+      border: 1px solid #ccc;
+    }
+
+     .green-button {
+      background-color: green;
+      color: white;
+      border-radius: 5px;
+      padding: 10px;
+      text-align: center;
+      cursor: pointer;
+    }
+
+    .green-button:hover {
+      opacity: 0.8;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="app">
+    <v-app>
+      <v-main>
+        <v-container>
+          <v-form ref="form" v-model="valid" lazy-validation>
+            <v-row>
+              <v-col cols="12" md="6">
+                <v-text-field v-model="name" label="Nombre" :disabled="loader" :rules="nameRules" outlined>
+                </v-text-field>
+              </v-col>
+              <v-col cols="12" md="6">
+                <v-text-field v-model="lastName" :disabled="loader" label="Apellido" :rules="lastNameRules" outlined>
+                </v-text-field>
+              </v-col>
+            </v-row>
+
+
+            <v-row>
+
+              <!-- <v-col cols="12" md="6">
+                <v-menu ref="menu" v-model="menu" :close-on-content-click="false" :return-value.sync="dob"
+                  transition="scale-transition" offset-y min-width="auto">
+                  <template v-slot:activator="{ on, attrs }">
+                    <v-text-field label="Fecha de Nacimiento" :disabled="loader" v-model="dob" :rules="dobRules"
+                      readonly outlined v-bind="attrs" v-on="on"></v-text-field>
+                  </template>
+                  <v-date-picker v-model="dob" no-title scrollable>
+                    <v-spacer></v-spacer>
+                    <v-btn text color="primary" @click="menu = false"> Cancel </v-btn>
+                    <v-btn text color="primary" @click="$refs.menu.save(dob)">
+                      OK
+                    </v-btn>
+                  </v-date-picker>
+                </v-menu>
+              </v-col> -->
+
+              <v-col cols="12" md="6">
+                <v-text-field v-model="amount" :disabled="loader" label="Monto a Solicitar" :rules="amountRules"
+                  outlined></v-text-field>
+              </v-col>
+
+              <v-col cols="12" md="6">
+                <v-text-field v-model="dni" label="DNI" :disabled="loader" :rules="dniRules" outlined></v-text-field>
+              </v-col>
+            </v-row>
+
+            <v-row>
+              <v-col cols="12" md="6">
+                <v-combobox outlined v-model="typeOfIncome" :disabled="loader" label="Tipo de Ingreso"
+                  :items="typeOfIncomeList" :rules='typeOfIncomeRules'></v-combobox>
+              </v-col>
+              <v-col cols="12" md="6">
+                <v-combobox outlined v-model="bank" :disabled="loader" label="¿En que Banco cobras el Sueldo?"
+                  item-text="display" item-value="id" :items="banksList" :rules='bankRules'></v-combobox>
+              </v-col>
+            </v-row>
+
+            <v-row>
+              
+              <v-col cols="12" md="12">
+                <v-text-field v-model="amountDestination" :disabled="loader" label="Destino del Prestamo"
+                  :rules="amountDestinationRules" outlined></v-text-field>
+              </v-col>
+            </v-row>
+
+            <v-row>
+              <v-col cols="12" md="6">
+                <v-text-field v-model="email" :disabled="loader" label="Email" :rules="emailRules" outlined>
+                </v-text-field>
+              </v-col>
+              <v-col cols="12" md="6">
+                  <v-text-field v-model="phone" :disabled="loader" label="Celular" :rules="phoneRules" outlined>
+                  </v-text-field>
+              </v-col>
+            </v-row>
+            <v-row>
+              <v-col cols="12">
+                <v-radio-group :disabled="loader" v-model="urgency">
+                  <v-radio v-for="(item, index) in urgencyList" :key="index" :label="`${item.display}`"
+                    :value="item.id">item</v-radio>
+                </v-radio-group>
+
+              </v-col>
+            </v-row>
+
+
+
+            <v-btn v-if="!loader" @click="validate" color="primary">Enviar</v-btn>
+            <v-progress-circular v-else indeterminate color="primary"></v-progress-circular>
+
+          </v-form>
+        </v-container>
+      </v-main>
+    </v-app>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.x/dist/vue.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.js"></script>
+  <script>
+    new Vue({
+      el: '#app',
+      vuetify: new Vuetify(),
+
+      data() {
+        return {
+          valid: true,
+          loader: false,
+          urgency: 'quick',
+          urgencyList: [
+            { id: 'quick', display: 'Necesito que se comuniquen lo antes posible' },
+            { id: 'quietly', display: 'No hay apuro solo estoy averiguando' },
+          ],
+          typeOfIncomeList: [
+            'Empleado en negro',
+            'Plan social',
+            'Empleado Publico Nacional',
+            'Empleado Publico Provincial',
+            'Empleado Publico Municipal',
+            'Empleado Privado',
+            'Jubilado o Pensionado de ANSES',
+            'Jubilado o Pensionado de IPS',
+            'Monotributista o Responsable inscripto',
+          ],
+          typeOfIncome: '',
+          typeOfIncomeRules: [v => !!v || 'El tipo de ingreso es requerido',],
+          menu: false,
+          demo: 'Una demo',
+          name: '',
+          nameRules: [
+            v => !!v || 'El Nombre es requerido'
+          ],
+          lastName: '',
+          lastNameRules: [
+            v => !!v || 'El Apellido es requerido',
+          ],
+          dob: '',
+          dobRules: [
+            v => !!v || 'La fecha de Nacimiento es requerida',
+          ],
+          dni: '',
+          dniRules: [
+            v => !!v || 'DNI es requerido',
+            v => /^[\d]{1,3}\.?[\d]{3,3}\.?[\d]{3,3}$/.test(v) || 'DNI no valido',
+            v => (v && v.length == 8) || 'El DNI debe tener 8 Digitos',
+          ],
+
+          email: '',
+          emailRules: [
+            v => !!v || 'El email es requerido',
+            v => /.+@.+\..+/.test(v) || 'email no valido',
+          ],
+
+          phone: '',
+          phoneRules: [
+            v => !!v || 'El Celular es requerido',
+          ],
+
+          codeArea: '',
+          codeAreaRules: [
+            v => !!v || 'El Codigo de Area es requerido',
+          ],
+
+          bank: '',
+          bankRules: [
+            v => !!v || 'El banco es requerido',
+          ],
+
+          amount: '',
+          amountRules: [
+            v => !!v || 'El Monto de Area es requerido',
+            v => /^[0-9]+([,-.][0-9]+)?$/.test(v) || 'Monto no valido',
+          ],
+
+          amountDestination: '',
+          amountDestinationRules: [
+            v => !!v || 'El destino del Monto de Area es requerido',
+          ],
+
+          banksList: [
+            { id: 1, display: 'NO COBRO POR BANCO' },
+            { id: 11, display: 'NACION ARGENTINA' },
+            { id: 7, display: 'GALICIA Y BUENOS AIRES S.A.' },
+            { id: 11, display: 'NACION ARGENTINA' },
+            { id: 14, display: 'PROVINCIA DE BUENOS AIRES' },
+            { id: 15, display: 'ICBC' },
+            { id: 16, display: 'CITIBANK N.A.' },
+            { id: 17, display: 'BBVA FRANCES S.A.' },
+            { id: 18, display: 'THE BANK OF TOKYO-MITSUBISHI UFJ, LTD.' },
+            { id: 20, display: 'PROVINCIA DE CORDOBA S.A.' },
+            { id: 27, display: 'SUPERVIELLE S.A.' },
+            { id: 29, display: 'CIUDAD DE BUENOS AIRES' },
+            { id: 34, display: 'PATAGONIA S.A.' },
+            { id: 44, display: 'HIPOTECARIO S.A.' },
+            { id: 45, display: 'SAN JUAN S.A.' },
+            { id: 60, display: 'DEL TUCUMAN S.A.' },
+            { id: 65, display: 'MUNICIPAL DE ROSARIO' },
+            { id: 72, display: 'SANTANDER RIO S.A.' },
+            { id: 83, display: 'DEL CHUBUT S.A.' },
+            { id: 86, display: 'SANTA CRUZ S.A.' },
+            { id: 93, display: 'PAMPA SOCIEDAD DE ECONOMÍA' },
+            { id: 94, display: 'CORRIENTES S.A.' },
+            { id: 97, display: 'PROVINCIA DEL NEUQUÉN SOCIEDAD ANÓ' },
+            { id: 147, display: 'INTERFINANZAS S.A.' },
+            { id: 150, display: 'HSBC BANK ARGENTINA S.A.' },
+            { id: 165, display: 'JPMORGAN CHASE BANK, NATIONAL ASSOCIATIO' },
+            { id: 191, display: 'CREDICOOP COOPERATIVO LIMITADO' },
+            { id: 198, display: 'VALORES S.A.' },
+            { id: 247, display: 'ROELA S.A.' },
+            { id: 254, display: 'MARIVA S.A.' },
+            { id: 259, display: 'ITAU ARGENTINA S.A.' },
+            { id: 262, display: 'BANK OF AMERICA, NATIONAL ASSOCIATION' },
+            { id: 266, display: 'BNP PARIBAS' },
+            { id: 268, display: 'PROVINCIA DE TIERRA DEL FUEGO' },
+            { id: 269, display: 'REPUBLICA ORIENTAL DEL URUGUAY' },
+            { id: 277, display: 'SAENZ S.A.' },
+            { id: 281, display: 'MERIDIAN S.A.' },
+            { id: 285, display: 'MACRO S.A.' },
+            { id: 299, display: 'COMAFI SOCIEDAD ANONIMA' },
+            { id: 300, display: 'INVERSION Y COMERCIO EXTERIOR' },
+            { id: 301, display: 'PIANO S.A.' },
+            { id: 303, display: 'FINANSUR S.A.' },
+            { id: 305, display: 'JULIO SOCIEDAD ANONIMA' },
+            { id: 309, display: 'RIOJA SOCIEDAD ANONIMA UNIPERSONAL' },
+            { id: 310, display: 'DEL SOL S.A.' },
+            { id: 311, display: 'NUEVO DEL CHACO S. A.' },
+            { id: 312, display: 'VOII S.A.' },
+            { id: 315, display: 'FORMOSA S.A.' },
+            { id: 319, display: 'CMF S.A.' },
+            { id: 321, display: 'SANTIAGO DEL ESTERO S.A.' },
+            { id: 322, display: 'INDUSTRIAL S.A.' },
+            { id: 330, display: 'NUEVO SANTA FE SOCIEDAD ANONIMA' },
+            { id: 331, display: 'CETELEM ARGENTINA S.A.' },
+            { id: 332, display: 'SERVICIOS FINANCIEROS S.A.' },
+            { id: 336, display: 'BRADESCO ARGENTINA S.A.U.' },
+            { id: 338, display: 'SERVICIOS Y TRANSACCIONES S.A..' },
+            { id: 339, display: 'RCI BANQUE S.A.' },
+            { id: 340, display: 'BACS CREDITO Y SECURITIZACION' },
+            { id: 341, display: 'MASVENTAS S.A.' },
+            { id: 386, display: 'NUEVO ENTRE RÍOS S.A.' },
+            { id: 389, display: 'COLUMBIA S.A.' },
+            { id: 426, display: 'BICA S.A.' },
+            { id: 431, display: 'COINAG S.A.' },
+            { id: 432, display: 'COMERCIO S.A.' },
+          ]
+        }
+      },
+      methods: {
+        async validate() {
+          this.loader = true
+          if (this.$refs.form.validate()) {
+
+            const params = {
+              name: this.name,
+              lastName: this.lastName,
+              email: this.email,
+              dni: this.dni,
+              areaCode: this.codeArea,
+              phone: this.phone,
+              bank: this.bank.id,
+              typeOfIncome: this.typeOfIncome,
+              amount: this.amount,
+              amountDestination: this.amountDestination,
+              urgency: this.urgency,
+              salesChannel: 'plider',
+              version: 'plider',
+              campaign: 'plider'
+            }
+            const options = {
+              method: 'POST',
+              mode:'no-cors'
+            };
+
+          fetch('https://proxy.prestamolider.com/proxy?' + new URLSearchParams(params), options)
+              .then(response => {
+                this.loader = false;
+                //console.log(response)
+                
+                $("<div>").attr("title", "Gracias por contactarnos")
+              .text("Completaste exitosamente el primer paso, has click aqui para continuar.")
+              .dialog({
+                buttons: {
+                  "Escribir mensaje": {
+                    text: "CONTINUAR",
+                    class: "green-button",
+                    click: function() {
+                      window.open("https://api.whatsapp.com/send?phone=3765083587&text=Hola!%20ya%20registre%20mis%20datos,%20%C2%BFque%20requisitos%20debo%20enviar?");
+                      $(this).dialog("close");
+                    }
+                  }
+                },
+                open: function(event, ui) {
+                      // Add rounded styles to dialog container
+                      $(this).parent().addClass("rounded-dialog");
+                    }
+              });
+                // confirm("Gracias por contactarnos, en breve nos comunicaremos con usted. <br> Escribirnos por mensaje haciendo click en el botón");
+                // var button = document.createElement("button");
+                // button.style.backgroundColor = "green";
+                // button.style.color = "white";
+                // button.style.marginTop = "10px";
+                // button.innerHTML = "WhatsApp";
+                // button.onclick = function() {
+                //     window.location.href = "https://api.whatsapp.com/send?phone=3765083587&text=%C2%A1Hola!%20Quiero%20hablar%20con%20un%20asesor.";
+                // };
+                // document.body.appendChild(button);
+
+              })
+              .catch(err => {
+                this.loader = false
+                console.log(err)
+              });
+          } else {
+            this.loader = false
+          }
+        },
+      },
+    })
+
+  </script>
+</body>
+
+</html>
