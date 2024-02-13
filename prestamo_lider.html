@@ -91,15 +91,19 @@
 
             <v-row>
               
-              <v-col cols="12" md="12">
+              <v-col cols="12" md="6">
                 <v-text-field v-model="amountDestination" :disabled="loader" label="Destino del Prestamo"
                   :rules="amountDestinationRules" outlined></v-text-field>
+              </v-col>
+              <v-col cols="12" md="6">
+                <v-text-field v-model="email" :disabled="loader" label="Email" :rules="emailRules" outlined>
+                </v-text-field>
               </v-col>
             </v-row>
 
             <v-row>
               <v-col cols="12" md="6">
-                <v-text-field v-model="email" :disabled="loader" label="Email" :rules="emailRules" outlined>
+                <v-text-field v-model="codeArea" :disabled="loader" label="Código de área" :rules="codeAreaRules" outlined pattern="[0-9]*">
                 </v-text-field>
               </v-col>
               <v-col cols="12" md="6">
@@ -190,8 +194,9 @@
           ],
 
           codeArea: '',
-          codeAreaRules: [
+          codeAreaRules: [ 
             v => !!v || 'El Codigo de Area es requerido',
+            v => /^\d+$/.test(v) || 'El Codigo de Area solo puede contener numeros',
           ],
 
           bank: '',
@@ -284,6 +289,7 @@
           if (this.$refs.form.validate()) {
 
             const params = {
+                usucod: 35,
               name: this.name,
               lastName: this.lastName,
               email: this.email,
@@ -317,7 +323,7 @@
                     text: "CONTINUAR",
                     class: "green-button",
                     click: function() {
-                      window.open("https://api.whatsapp.com/send?phone=3765083587&text=Hola!%20ya%20registre%20mis%20datos,%20%C2%BFque%20requisitos%20debo%20enviar?");
+                      window.open("https://wa.link/sfloa3");
                       $(this).dialog("close");
                     }
                   }
@@ -334,7 +340,7 @@
                 // button.style.marginTop = "10px";
                 // button.innerHTML = "WhatsApp";
                 // button.onclick = function() {
-                //     window.location.href = "https://api.whatsapp.com/send?phone=3765083587&text=%C2%A1Hola!%20Quiero%20hablar%20con%20un%20asesor.";
+                //     window.location.href = "https://wa.link/1bkycs";
                 // };
                 // document.body.appendChild(button);
 
