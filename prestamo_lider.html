@@ -17,17 +17,17 @@
     }
 
      .green-button {
-      background-color: green;
-      color: white;
-      border-radius: 5px;
-      padding: 10px;
-      text-align: center;
-      cursor: pointer;
-    }
-
-    .green-button:hover {
-      opacity: 0.8;
-    }
+          background-color: green !important;
+          color: white !important;
+          border-radius: 5px !important;
+          padding: 20px !important;
+          text-align: center !important;
+          cursor: pointer !important;
+        }
+        
+        .green-button:hover {
+          opacity: 0.9 !important;
+        }
   </style>
 </head>
 
@@ -42,10 +42,11 @@
                 <v-text-field v-model="name" label="Nombre" :disabled="loader" :rules="nameRules" outlined>
                 </v-text-field>
               </v-col>
+
               <v-col cols="12" md="6">
-                <v-text-field v-model="lastName" :disabled="loader" label="Apellido" :rules="lastNameRules" outlined>
-                </v-text-field>
+                <v-text-field v-model="dni" label="DNI" :disabled="loader" :rules="dniRules" outlined></v-text-field>
               </v-col>
+              
             </v-row>
 
 
@@ -68,62 +69,35 @@
                 </v-menu>
               </v-col> -->
 
+            </v-row>
+             <v-row>
               <v-col cols="12" md="6">
-                <v-text-field v-model="amount" :disabled="loader" label="Monto a Solicitar" :rules="amountRules"
-                  outlined></v-text-field>
+                <v-text-field v-model="codeArea" :disabled="loader" label="Cód. Área* (sin 0)" :rules="codeAreaRules" outlined pattern="[0-9]*">
+                </v-text-field>
               </v-col>
-
               <v-col cols="12" md="6">
-                <v-text-field v-model="dni" label="DNI" :disabled="loader" :rules="dniRules" outlined></v-text-field>
+                  <v-text-field v-model="phone" :disabled="loader" label="Celular* (sin 15)" :rules="phoneRules" outlined>
+                  </v-text-field>
               </v-col>
             </v-row>
 
             <v-row>
-              <v-col cols="12" md="6">
-                <v-combobox outlined v-model="typeOfIncome" :disabled="loader" label="Tipo de Ingreso"
-                  :items="typeOfIncomeList" :rules='typeOfIncomeRules'></v-combobox>
-              </v-col>
-              <v-col cols="12" md="6">
-                <v-combobox outlined v-model="bank" :disabled="loader" label="¿En que Banco cobras el Sueldo?"
-                  item-text="display" item-value="id" :items="banksList" :rules='bankRules'></v-combobox>
-              </v-col>
-            </v-row>
-
-            <v-row>
-              
-              <v-col cols="12" md="6">
-                <v-text-field v-model="amountDestination" :disabled="loader" label="Destino del Prestamo"
-                  :rules="amountDestinationRules" outlined></v-text-field>
-              </v-col>
+    
               <v-col cols="12" md="6">
                 <v-text-field v-model="email" :disabled="loader" label="Email" :rules="emailRules" outlined>
                 </v-text-field>
               </v-col>
-            </v-row>
-
-            <v-row>
-              <v-col cols="12" md="6">
-                <v-text-field v-model="codeArea" :disabled="loader" label="Código de área" :rules="codeAreaRules" outlined pattern="[0-9]*">
-                </v-text-field>
-              </v-col>
-              <v-col cols="12" md="6">
-                  <v-text-field v-model="phone" :disabled="loader" label="Celular" :rules="phoneRules" outlined>
-                  </v-text-field>
-              </v-col>
-            </v-row>
-            <v-row>
-              <v-col cols="12">
+              <v-col cols="12" md='6'>
                 <v-radio-group :disabled="loader" v-model="urgency">
                   <v-radio v-for="(item, index) in urgencyList" :key="index" :label="`${item.display}`"
                     :value="item.id">item</v-radio>
                 </v-radio-group>
 
               </v-col>
+              
             </v-row>
+            <v-btn v-if="!loader" @click="validate" class="green-button">Solicitar préstamo</v-btn>
 
-
-
-            <v-btn v-if="!loader" @click="validate" color="primary">Enviar</v-btn>
             <v-progress-circular v-else indeterminate color="primary"></v-progress-circular>
 
           </v-form>
@@ -289,16 +263,11 @@
           if (this.$refs.form.validate()) {
 
             const params = {
-                usucod: 35,
               name: this.name,
-              lastName: this.lastName,
-              email: this.email,
               dni: this.dni,
               areaCode: this.codeArea,
               phone: this.phone,
-              bank: this.bank.id,
-              typeOfIncome: this.typeOfIncome,
-              amount: this.amount,
+              email: this.email,
               amountDestination: this.amountDestination,
               urgency: this.urgency,
               salesChannel: 'plider',
@@ -323,7 +292,7 @@
                     text: "CONTINUAR",
                     class: "green-button",
                     click: function() {
-                      window.open("https://wa.link/sfloa3");
+                      window.open("https://wa.link/eacp40");
                       $(this).dialog("close");
                     }
                   }
