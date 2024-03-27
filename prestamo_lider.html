@@ -110,21 +110,6 @@
   <script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.js"></script>
   <script>
 
-  // Function to parse the SOAP response and extract the value of P_Rpta field
-  function parseSOAPResponse(response) {
-    // Parse the XML response
-    const parser = new DOMParser();
-    const xmlDoc = parser.parseFromString(response, "text/xml");
-
-    // Get the value of P_Rpta field
-    const pRpta = xmlDoc.getElementsByTagName("P_Rpta")[0].textContent;
-
-    // Log the value of P_Rpta field
-    console.log("Value of P_Rpta:", pRpta);
-
-    // Return the value of P_Rpta field
-    return pRpta;
-  }
 
   function checkAprobado(pRpta) {
     // the P_Rpta field returns a string in the format:
@@ -132,17 +117,14 @@
     // where N means if the loan is rejected (N = Not rejected, S = rejected) and the second value tells the type of aprobation.
     // we need to extract those two values from the string
     
-    // Extract the first character from the string
-    const isRejected = pRpta[1] === "N" ? false : true;
+    // check if the string "[N]" exists in the pRpta
+    const isNotRejected = pRpta.includes("[N]");
 
-    // Extract the second string inside the []
-    const aprobationType = pRpta[3];
-
-    return { isRejected, aprobationType };
+    return !isNotRejected;
   }
 
   // Call the function to parse the SOAP response
-  parseSOAPResponse(soapResponse);
+  //parseSOAPResponse(soapResponse);
     new Vue({
       el: '#app',
       vuetify: new Vuetify(),
@@ -318,9 +300,27 @@
                 this.loader = false;
                 //console.log(response)
 
-                const pRpta = parseSOAPResponse(response);
+                const respuesta = response.content.Respuesta;
 
-                const { isRejected, aprobationType } = checkAprobado(pRpta);
+                // check if P_Rpta is present in the response
+                if (!respuesta || !respuesta.P_Rpta || respuesta.P_Rpta === "" || respuesta == 'Error') {
+                  $("<div>").attr("title", "Error")
+                    .text("Hubo un error al procesar tu solicitud, por favor intenta nuevamente.")
+                    .dialog({
+                      buttons: {
+                        "Cerrar": function() {
+                          $(this).dialog("close");
+                        }
+                      },
+                      open: function(event, ui) {
+                        // Add rounded styles to dialog container
+                        $(this).parent().addClass("rounded-dialog");
+                      }
+                    });
+                  return;
+                }
+
+                const isRejected = checkAprobado(respuesta.P_Rpta);
 
                 if (isRejected) {
                   $("<div>").attr("title", "Rechazado")
