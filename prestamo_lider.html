@@ -292,15 +292,79 @@
             }
             const options = {
               method: 'POST',
-              mode:'no-cors'
+              //mode:'no-cors'
             };
 
           fetch('https://proxy.prestamolider.com/proxy?' + new URLSearchParams(params), options)
               .then(response => {
                 this.loader = false;
-                //console.log(response)
+                //console.log(response.body)
 
-                const respuesta = response.content.Respuesta;
+                return response.json();
+              }).then(data => {
+                  //console.log(data.content.Respuesta.P_Rpta)
+
+                  const respuesta = data.content.Respuesta;
+
+                  // check if P_Rpta is present in the response
+                  if (!respuesta || respuesta == 'Error') {
+                    $("<div>").attr("title", "Error")
+                      .text("Hubo un error al procesar tu solicitud, por favor intenta nuevamente.")
+                      .dialog({
+                        buttons: {
+                          "Cerrar": function() {
+                            $(this).dialog("close");
+                          }
+                        },
+                        open: function(event, ui) {
+                          // Add rounded styles to dialog container
+                          $(this).parent().addClass("rounded-dialog");
+                        }
+                      });
+                    return;
+                  }
+
+                  const isRejected = checkAprobado(respuesta.P_Rpta);
+
+                  if (isRejected) {
+                    $("<div>").attr("title", "Rechazado")
+                      .text("Por el momento no calificas para un crédito, podes consultar más adelante.")
+                      .dialog({
+                        buttons: {
+                          "Cerrar": function() {
+                            $(this).dialog("close");
+                          }
+                        },
+                        open: function(event, ui) {
+                          // Add rounded styles to dialog container
+                          $(this).parent().addClass("rounded-dialog");
+                        }
+                      });
+                  } else {
+                    $("<div>").attr("title", "Gracias por contactarnos")
+                      .text("Completaste exitosamente el primer paso, has click aqui para continuar.")
+                      .dialog({
+                        buttons: {
+                          "Escribir mensaje": {
+                            text: "CONTINUAR",
+                            class: "green-button",
+                            click: function() {
+                              window.open("https://wa.link/eacp40");
+                              $(this).dialog("close");
+                            }
+                          }
+                        },
+                        open: function(event, ui) {
+                          // Add rounded styles to dialog container
+                          $(this).parent().addClass("rounded-dialog");
+                        }
+                      });
+                  }
+
+
+                //});
+
+                /* const respuesta = json.content.Respuesta;
 
                 // check if P_Rpta is present in the response
                 if (!respuesta || !respuesta.P_Rpta || respuesta.P_Rpta === "" || respuesta == 'Error') {
@@ -355,7 +419,7 @@
                         $(this).parent().addClass("rounded-dialog");
                       }
                     });
-                }
+                } */
                 // confirm("Gracias por contactarnos, en breve nos comunicaremos con usted. <br> Escribirnos por mensaje haciendo click en el botón");
                 // var button = document.createElement("button");
                 // button.style.backgroundColor = "green";
