@@ -279,23 +279,29 @@
           if (this.$refs.form.validate()) {
 
             const params = {
+              usucod: 998,
               name: this.name,
+              lastname: '',
+              amount: 11,
               dni: this.dni,
-              areaCode: this.codeArea,
+              areacode: this.codeArea,
               phone: this.phone,
               email: this.email,
-              amountDestination: this.amountDestination,
+              amountdestination: this.amountDestination,
               urgency: this.urgency,
-              salesChannel: 'plider',
+              saleschannel: 'plider',
               version: 'plider',
-              campaign: 'plider'
+              campaign: 'plider',
+              bank: '',
+              typeofincome: '',
+              saleschannel: ''
             }
             const options = {
               method: 'POST',
               //mode:'no-cors'
             };
 
-          fetch('https://proxy.prestamolider.com/proxy?' + new URLSearchParams(params), options)
+          fetch('https://proxy.prestamolider.com/soap?' + new URLSearchParams(params), options)
               .then(response => {
                 this.loader = false;
                 //console.log(response.body)
