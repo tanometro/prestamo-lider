@@ -70,14 +70,15 @@
               </v-col> -->
 
             </v-row>
-             <v-row>
+            <v-row>
               <v-col cols="12" md="6">
                 <v-text-field v-model="codeArea" :disabled="loader" label="Cód. Área* (sin 0)" :rules="codeAreaRules" outlined pattern="[0-9]*">
                 </v-text-field>
               </v-col>
               <v-col cols="12" md="6">
-                  <v-text-field v-model="phone" :disabled="loader" label="Celular* (sin 15)" :rules="phoneRules" outlined>
-                  </v-text-field>
+                <v-text-field v-model="phone" :disabled="loader" label="Celular* (sin 15)" :rules="phoneRules" outlined pattern="[0-9]*">
+                </v-text-field>
+                
               </v-col>
             </v-row>
 
@@ -87,13 +88,24 @@
                 <v-text-field v-model="email" :disabled="loader" label="Email" :rules="emailRules" outlined>
                 </v-text-field>
               </v-col>
-              <v-col cols="12" md='6'>
+              <!-- <v-col cols="12" md='6'>
                 <v-radio-group :disabled="loader" v-model="urgency">
                   <v-radio v-for="(item, index) in urgencyList" :key="index" :label="`${item.display}`"
                     :value="item.id">item</v-radio>
                 </v-radio-group>
 
-              </v-col>
+              </v-col> -->
+
+                <v-col cols="12" md="6">
+                  <v-autocomplete v-model="bank" :disabled="loader" label="Banco" :items="banksList" :rules="bankRules" outlined placeholder="Banco" :item-value="'id'" :item-text="'display'">
+                    <template v-slot:item="{ item }">
+                      {{ item.display }}
+                    </template>
+                    <template v-slot:selection="{ item }">
+                      {{ item.display }}
+                    </template>
+                  </v-autocomplete>
+                </v-col>
               
             </v-row>
             <v-btn v-if="!loader" @click="validate" class="green-button">Solicitar préstamo</v-btn>
@@ -178,16 +190,32 @@
             v => /.+@.+\..+/.test(v) || 'email no valido',
           ],
 
-          phone: '',
-          phoneRules: [
+            phone: '',
+            phoneRules: [
             v => !!v || 'El Celular es requerido',
-          ],
+            v => /^\d{0,8}$/.test(v) || 'El Celular debe tener máximo 8 dígitos',
+            v => /^[0-9]*$/.test(v) || 'El Celular debe ser un número',
+            // add a rule that checks the length of the phone number based on the area code
+            v => {
+              const areaCode = this.codeArea;
+              const phoneLength = v.length;
+              if (areaCode === '11') {
+                return phoneLength === 8 || 'El Celular debe tener 8 dígitos';
+              } else if (areaCode.length === 3) {
+                return phoneLength === 7 || 'El Celular debe tener 7 dígitos';
+              } else if (areaCode.length === 4) {
+                return phoneLength === 6 || 'El Celular debe tener 6 dígitos';
+              }
+              return true;
+            },
+            ],
 
-          codeArea: '',
-          codeAreaRules: [ 
+            codeArea: '',
+            codeAreaRules: [ 
             v => !!v || 'El Codigo de Area es requerido',
-            v => /^\d+$/.test(v) || 'El Codigo de Area solo puede contener numeros',
-          ],
+            v => /^\d{0,4}$/.test(v) || 'El Codigo de Area debe tener máximo 4 dígitos',
+            v => /^[0-9]*$/.test(v) || 'El Codigo de Area debe ser un número',
+            ],
 
           bank: '',
           bankRules: [
@@ -205,72 +233,88 @@
             v => !!v || 'El destino del Monto de Area es requerido',
           ],
 
-          banksList: [
-            { id: 1, display: 'NO COBRO POR BANCO' },
-            { id: 11, display: 'NACION ARGENTINA' },
-            { id: 7, display: 'GALICIA Y BUENOS AIRES S.A.' },
-            { id: 11, display: 'NACION ARGENTINA' },
-            { id: 14, display: 'PROVINCIA DE BUENOS AIRES' },
-            { id: 15, display: 'ICBC' },
-            { id: 16, display: 'CITIBANK N.A.' },
-            { id: 17, display: 'BBVA FRANCES S.A.' },
-            { id: 18, display: 'THE BANK OF TOKYO-MITSUBISHI UFJ, LTD.' },
-            { id: 20, display: 'PROVINCIA DE CORDOBA S.A.' },
-            { id: 27, display: 'SUPERVIELLE S.A.' },
-            { id: 29, display: 'CIUDAD DE BUENOS AIRES' },
-            { id: 34, display: 'PATAGONIA S.A.' },
-            { id: 44, display: 'HIPOTECARIO S.A.' },
-            { id: 45, display: 'SAN JUAN S.A.' },
-            { id: 60, display: 'DEL TUCUMAN S.A.' },
-            { id: 65, display: 'MUNICIPAL DE ROSARIO' },
-            { id: 72, display: 'SANTANDER RIO S.A.' },
-            { id: 83, display: 'DEL CHUBUT S.A.' },
-            { id: 86, display: 'SANTA CRUZ S.A.' },
-            { id: 93, display: 'PAMPA SOCIEDAD DE ECONOMÍA' },
-            { id: 94, display: 'CORRIENTES S.A.' },
-            { id: 97, display: 'PROVINCIA DEL NEUQUÉN SOCIEDAD ANÓ' },
-            { id: 147, display: 'INTERFINANZAS S.A.' },
-            { id: 150, display: 'HSBC BANK ARGENTINA S.A.' },
-            { id: 165, display: 'JPMORGAN CHASE BANK, NATIONAL ASSOCIATIO' },
-            { id: 191, display: 'CREDICOOP COOPERATIVO LIMITADO' },
-            { id: 198, display: 'VALORES S.A.' },
-            { id: 247, display: 'ROELA S.A.' },
-            { id: 254, display: 'MARIVA S.A.' },
-            { id: 259, display: 'ITAU ARGENTINA S.A.' },
-            { id: 262, display: 'BANK OF AMERICA, NATIONAL ASSOCIATION' },
-            { id: 266, display: 'BNP PARIBAS' },
-            { id: 268, display: 'PROVINCIA DE TIERRA DEL FUEGO' },
-            { id: 269, display: 'REPUBLICA ORIENTAL DEL URUGUAY' },
-            { id: 277, display: 'SAENZ S.A.' },
-            { id: 281, display: 'MERIDIAN S.A.' },
-            { id: 285, display: 'MACRO S.A.' },
-            { id: 299, display: 'COMAFI SOCIEDAD ANONIMA' },
-            { id: 300, display: 'INVERSION Y COMERCIO EXTERIOR' },
-            { id: 301, display: 'PIANO S.A.' },
-            { id: 303, display: 'FINANSUR S.A.' },
-            { id: 305, display: 'JULIO SOCIEDAD ANONIMA' },
-            { id: 309, display: 'RIOJA SOCIEDAD ANONIMA UNIPERSONAL' },
-            { id: 310, display: 'DEL SOL S.A.' },
-            { id: 311, display: 'NUEVO DEL CHACO S. A.' },
-            { id: 312, display: 'VOII S.A.' },
-            { id: 315, display: 'FORMOSA S.A.' },
-            { id: 319, display: 'CMF S.A.' },
-            { id: 321, display: 'SANTIAGO DEL ESTERO S.A.' },
-            { id: 322, display: 'INDUSTRIAL S.A.' },
-            { id: 330, display: 'NUEVO SANTA FE SOCIEDAD ANONIMA' },
-            { id: 331, display: 'CETELEM ARGENTINA S.A.' },
-            { id: 332, display: 'SERVICIOS FINANCIEROS S.A.' },
-            { id: 336, display: 'BRADESCO ARGENTINA S.A.U.' },
-            { id: 338, display: 'SERVICIOS Y TRANSACCIONES S.A..' },
-            { id: 339, display: 'RCI BANQUE S.A.' },
-            { id: 340, display: 'BACS CREDITO Y SECURITIZACION' },
-            { id: 341, display: 'MASVENTAS S.A.' },
-            { id: 386, display: 'NUEVO ENTRE RÍOS S.A.' },
-            { id: 389, display: 'COLUMBIA S.A.' },
-            { id: 426, display: 'BICA S.A.' },
-            { id: 431, display: 'COINAG S.A.' },
-            { id: 432, display: 'COMERCIO S.A.' },
-          ]
+         banksList: [
+          { id: 2, display: "NO COBRO POR BANCO"},
+    { id: 7, display: "BANCO DE GALICIA Y BUENOS AIRES S.A.U." },
+    { id: 11, display: "BANCO DE LA NACION ARGENTINA" },
+    { id: 14, display: "BANCO DE LA PROVINCIA DE BUENOS AIRES" },
+    { id: 15, display: "INDUSTRIAL AND COMMERCIAL BANK OF CHINA" },
+    { id: 16, display: "CITIBANK N.A." },
+    { id: 17, display: "BANCO BBVA ARGENTINA S.A." },
+    { id: 20, display: "BANCO DE LA PROVINCIA DE CORDOBA S.A." },
+    { id: 27, display: "BANCO SUPERVIELLE S.A." },
+    { id: 29, display: "BANCO DE LA CIUDAD DE BUENOS AIRES" },
+    { id: 34, display: "BANCO PATAGONIA S.A." },
+    { id: 44, display: "BANCO HIPOTECARIO S.A." },
+    { id: 45, display: "BANCO DE SAN JUAN S.A." },
+    { id: 65, display: "BANCO MUNICIPAL DE ROSARIO" },
+    { id: 72, display: "BANCO SANTANDER ARGENTINA S.A." },
+    { id: 83, display: "BANCO DEL CHUBUT S.A." },
+    { id: 86, display: "BANCO DE SANTA CRUZ S.A." },
+    { id: 93, display: "BANCO DE LA PAMPA SOCIEDAD DE ECONOMÍA M" },
+    { id: 94, display: "BANCO DE CORRIENTES S.A." },
+    { id: 97, display: "BANCO PROVINCIA DEL NEUQUÉN SOCIEDAD ANÓ" },
+    { id: 131, display: "BANK OF CHINA LIMITED SUCURSAL BUENOS AI" },
+    { id: 143, display: "BRUBANK S.A.U." },
+    { id: 147, display: "BIBANK S.A." },
+    { id: 150, display: "HSBC BANK ARGENTINA S.A." },
+    { id: 158, display: "OPEN BANK ARGENTINA S.A." },
+    { id: 165, display: "JPMORGAN CHASE BANK, NATIONAL ASSOCIATIO" },
+    { id: 191, display: "BANCO CREDICOOP COOPERATIVO LIMITADO" },
+    { id: 198, display: "BANCO DE VALORES S.A." },
+    { id: 247, display: "BANCO ROELA S.A." },
+    { id: 254, display: "BANCO MARIVA S.A." },
+    { id: 259, display: "BANCO BMA S.A.U." },
+    { id: 266, display: "BNP PARIBAS" },
+    { id: 268, display: "BANCO PROVINCIA DE TIERRA DEL FUEGO" },
+    { id: 269, display: "BANCO DE LA REPUBLICA ORIENTAL DEL URUGU" },
+    { id: 277, display: "BANCO SAENZ S.A." },
+    { id: 281, display: "BANCO MERIDIAN S.A." },
+    { id: 285, display: "BANCO MACRO S.A." },
+    { id: 299, display: "BANCO COMAFI SOCIEDAD ANONIMA" },
+    { id: 300, display: "BANCO DE INVERSION Y COMERCIO EXTERIOR S" },
+    { id: 301, display: "BANCO PIANO S.A." },
+    { id: 305, display: "BANCO JULIO SOCIEDAD ANONIMA" },
+    { id: 309, display: "BANCO RIOJA SOCIEDAD ANONIMA UNIPERSONAL" },
+    { id: 310, display: "BANCO DEL SOL S.A." },
+    { id: 311, display: "NUEVO BANCO DEL CHACO S. A." },
+    { id: 312, display: "BANCO VOII S.A." },
+    { id: 315, display: "BANCO DE FORMOSA S.A." },
+    { id: 319, display: "BANCO CMF S.A." },
+    { id: 321, display: "BANCO DE SANTIAGO DEL ESTERO S.A." },
+    { id: 322, display: "BANCO INDUSTRIAL S.A." },
+    { id: 330, display: "NUEVO BANCO DE SANTA FE SOCIEDAD ANONIMA" },
+    { id: 331, display: "BANCO CETELEM ARGENTINA S.A." },
+    { id: 332, display: "BANCO DE SERVICIOS FINANCIEROS S.A." },
+    { id: 338, display: "BANCO DE SERVICIOS Y TRANSACCIONES S.A." },
+    { id: 339, display: "RCI BANQUE S.A." },
+    { id: 340, display: "BACS BANCO DE CREDITO Y SECURITIZACION S" },
+    { id: 341, display: "BANCO MASVENTAS S.A." },
+    { id: 384, display: "WILOBANK S.A.U." },
+    { id: 386, display: "NUEVO BANCO DE ENTRE RÍOS S.A." },
+    { id: 389, display: "BANCO COLUMBIA S.A." },
+    { id: 426, display: "BANCO BICA S.A." },
+    { id: 431, display: "BANCO COINAG S.A." },
+    { id: 432, display: "BANCO DE COMERCIO S.A." },
+    { id: 435, display: "BANCO SUCREDITO REGIONAL S.A.U." },
+    { id: 448, display: "BANCO DINO S.A." },
+    { id: 44077, display: "COMPAÑIA FINANCIERA ARGENTINA S.A." },
+    { id: 44088, display: "VOLKSWAGEN FINANCIAL SERVICES COMPAÑIA F" },
+    { id: 44090, display: "IUDU COMPAÑÍA FINANCIERA S.A." },
+    { id: 44092,
+
+ display: "FCA COMPAÑIA FINANCIERA S.A." },
+    { id: 44093, display: "GPAT COMPAÑIA FINANCIERA S.A.U." },
+    { id: 44094, display: "MERCEDES-BENZ COMPAÑÍA FINANCIERA ARGENT" },
+    { id: 44095, display: "ROMBO COMPAÑÍA FINANCIERA S.A." },
+    { id: 44096, display: "JOHN DEERE CREDIT COMPAÑÍA FINANCIERA S." },
+    { id: 44098, display: "PSA FINANCE ARGENTINA COMPAÑÍA FINANCIER" },
+    { id: 44099, display: "TOYOTA COMPAÑÍA FINANCIERA DE ARGENTINA" },
+    { id: 45030, display: "NARANJA DIGITAL COMPAÑÍA FINANCIERA S.A." },
+    { id: 45056, display: "MONTEMAR COMPAÑIA FINANCIERA S.A." },
+    { id: 45072, display: "REBA COMPAÑIA FINANCIERA S.A." },
+    { id: 65203, display: "CREDITO REGIONAL COMPAÑIA FINANCIERA S.A." }
+]
         }
       },
       methods: {
@@ -288,11 +332,11 @@
               phone: this.phone,
               email: this.email,
               amountdestination: this.amountDestination,
-              urgency: this.urgency,
+              urgency: 'quietly',
               saleschannel: 'plider',
               version: 'plider',
               campaign: 'plider',
-              bank: '',
+              bank: this.bank,
               typeofincome: '',
               saleschannel: ''
             }
@@ -333,12 +377,17 @@
                   const isRejected = checkAprobado(respuesta.P_Rpta);
 
                   if (isRejected) {
-                    $("<div>").attr("title", "Rechazado")
-                      .text("Por el momento no calificas para un crédito, podes consultar más adelante.")
+                    $("<div>").attr("title", "Gracias por contactarnos")
+                      .text("Por el momento no calificas para un crédito, podes consultar siguiendo el siguiente enlace:")
                       .dialog({
                         buttons: {
-                          "Cerrar": function() {
-                            $(this).dialog("close");
+                          "El ABC para obtener un prestamo": {
+                            text: "El ABC para obtener un prestamo",
+                            class: "green-button",
+                            click: function() {
+                              window.open("https://prestamolider.com/el-abc-para-obtener-un-prestamo-pasos-practicos-para-aumentar-tus-probabilidades-de-aprobacion/");
+                              $(this).dialog("close");
+                            }
                           }
                         },
                         open: function(event, ui) {
